@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.Arrays;
 
 public class CoffeeMachine {
     public static void main(String[] args) {
@@ -10,83 +11,97 @@ public class CoffeeMachine {
         int amountOfMoney = 550;
         int numOfCoffee = 0;
         int[] supplies = {amountOfWater, amountOfMilk, amountOfBeans, numOfCups, amountOfMoney, numOfCoffee};
-        // int forCoffee = {waterForCup, milkForCup, beansForCup, cupsForCup, moneyForCup, amountOfWater / waterForCup};
+        String[] forCoffee = {"water", "milk", "coffee beans", "cups", "money", "needed coffee cups"};
         int[] forEspresso = {250, 0, 16, 1, 4, amountOfWater / 250};
         int[] forLatte = {350, 75, 20, 1, 7, amountOfWater / 350};
         int[] forCappuccino = {200, 100, 12, 1, 6, amountOfWater / 200};
+        int[] forCup = Arrays.copyOf(supplies, supplies.length);
+        String outOf = forCoffee[5];
 
-        System.out.printf("The coffee machine has:\n" +
-                "%d of water\n" +
-                "%d of milk\n" +
-                "%d of coffee beans\n" +
-                "%d of disposable cups\n" +
-                "%d of money\n\n", supplies[0], supplies[1], supplies[2], supplies[3], supplies[4]);
-
-        System.out.println("Write action (buy, fill, take): ");
-        String action = scanner.nextLine();
-        switch (action) {
-            case "buy":
-                System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
-                int buy = scanner.nextInt();
-                switch (buy) {
-                    case 1:
-                        for (int i = 0; i < supplies.length-2; i++) {
-                            supplies[i] -= forEspresso[i];
+        String action;
+        boolean turnOn = true;
+        while (turnOn) {
+            System.out.println("Write action (buy, fill, take, remaining, exit): ");
+            action = scanner.next();
+            switch (action) {
+                case "buy":
+                    System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
+                    String buy = scanner.next();
+                    switch (buy) {
+                        case "1":
+                            forCup = Arrays.copyOf(forEspresso, forEspresso.length);
+                            for (int i = 0; i < 4; i++) {
+                                if (supplies[i] == 0 || forCup[i] == 0) {
+                                    continue;
+                                } else if (supplies[i] / forCup[i] < forCup[5]) {
+                                    forCup[5] = supplies[i] / forCup[i];
+                                    outOf = forCoffee[i];
+                                }
+                            }
+                            break;
+                        case "2":
+                            forCup = Arrays.copyOf(forLatte, forLatte.length);
+                            for (int i = 0; i < 4; i++) {
+                                if (supplies[i] == 0 || forCup[i] == 0) {
+                                    continue;
+                                } else if (supplies[i] / forCup[i] < forCup[5]) {
+                                    forCup[5] = supplies[i] / forCup[i];
+                                    outOf = forCoffee[i];
+                                }
+                            }
+                            break;
+                        case "3":
+                            forCup = Arrays.copyOf(forCappuccino, forCappuccino.length);
+                            for (int i = 0; i < 4; i++) {
+                                if (supplies[i] == 0 || forCup[i] == 0) {
+                                    continue;
+                                } else if (supplies[i] / forCup[i] < forCup[5]) {
+                                    forCup[5] = supplies[i] / forCup[i];
+                                    outOf = forCoffee[i];
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    if (buy.equals("1") || buy.equals("2") || buy.equals("3")) {
+                        if (forCup[5] > 0) {
+                            System.out.println("I have enough resources, making you a coffee!\n");
+                            for (int i = 0; i < supplies.length-2; i++) {
+                                supplies[i] -= forCup[i];
+                            }
+                            supplies[4] += forCup[4];
+                        } else {
+                            System.out.printf("Sorry, not enough %s!\n", outOf);
                         }
-                        supplies[4] += forEspresso[4];
-                        break;
-                    case 2:
-                        for (int i = 0; i < supplies.length-2; i++) {
-                            supplies[i] -= forLatte[i];
-                        }
-                        supplies[4] += forLatte[4];
-                        break;
-                    case 3:
-                        for (int i = 0; i < supplies.length-2; i++) {
-                            supplies[i] -= forCappuccino[i];
-                        }
-                        supplies[4] += forCappuccino[4];
-                        break;
-                }
-                break;
-            case "fill":
-                System.out.println("Write how many ml of water do you want to add: ");
-                supplies[0] += scanner.nextInt();
-                System.out.println("Write how many ml of milk do you want to add: ");
-                supplies[1] += scanner.nextInt();
-                System.out.println("Write how many grams of coffee beans do you want to add: ");
-                supplies[2] += scanner.nextInt();
-                System.out.println("Write how many disposable cups of coffee do you want to add: ");
-                supplies[3] += scanner.nextInt();
-                break;
-            case "take":
-                System.out.printf("I gave you $%d\n", supplies[4]);
-                supplies[4] = 0;
-                break;
-        }
-
-        System.out.printf("\nThe coffee machine has:\n" +
-                "%d of water\n" +
-                "%d of milk\n" +
-                "%d of coffee beans\n" +
-                "%d of disposable cups\n" +
-                "%d of money\n", supplies[0], supplies[1], supplies[2], supplies[3], supplies[4]);
-
-
-        /*
-        for (int i = 0; i < 3; i++) {
-            if (supplies[i] / forCup[i] < forCup[3]) {
-                forCup[3] = supplies[i] / forCup[i];
+                    }
+                    break;
+                case "fill":
+                    System.out.println("Write how many ml of water do you want to add: ");
+                    supplies[0] += scanner.nextInt();
+                    System.out.println("Write how many ml of milk do you want to add: ");
+                    supplies[1] += scanner.nextInt();
+                    System.out.println("Write how many grams of coffee beans do you want to add: ");
+                    supplies[2] += scanner.nextInt();
+                    System.out.println("Write how many disposable cups of coffee do you want to add: ");
+                    supplies[3] += scanner.nextInt();
+                    break;
+                case "take":
+                    System.out.printf("I gave you $%d\n", supplies[4]);
+                    supplies[4] = 0;
+                    break;
+                case "remaining":
+                    System.out.printf("\nThe coffee machine has:\n" +
+                            "%d of water\n" +
+                            "%d of milk\n" +
+                            "%d of coffee beans\n" +
+                            "%d of disposable cups\n" +
+                            "%d of money\n", supplies[0], supplies[1], supplies[2], supplies[3], supplies[4]);
+                    break;
+                case "exit":
+                    turnOn = false;
+                    break;
             }
         }
-        if (supplies[3] == forCup[3]) {
-            System.out.println("Yes, I can make that amount of coffee");
-        } else if (supplies[3] > forCup[3]) {
-            System.out.printf("No, I can make only %d cup(s) of coffee", forCup[3]);
-        } else {
-            System.out.printf("Yes, I can make that amount of coffee (and even %d more than that)", forCup[3] - supplies[3]);
-        }
-
-         */
     }
 }
