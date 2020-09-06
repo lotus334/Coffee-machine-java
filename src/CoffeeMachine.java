@@ -1,23 +1,8 @@
 import java.util.Scanner;
-import java.util.Arrays;
 
 public class CoffeeMachine {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int amountOfWater = 400;
-        int amountOfMilk = 540;
-        int amountOfBeans = 120;
-        int numOfCups = 9;
-        int amountOfMoney = 550;
-        int numOfCoffee = 0;
-        int[] supplies = {amountOfWater, amountOfMilk, amountOfBeans, numOfCups, amountOfMoney, numOfCoffee};
-        String[] forCoffee = {"water", "milk", "coffee beans", "cups", "money", "needed coffee cups"};
-        int[] forEspresso = {250, 0, 16, 1, 4, amountOfWater / 250};
-        int[] forLatte = {350, 75, 20, 1, 7, amountOfWater / 350};
-        int[] forCappuccino = {200, 100, 12, 1, 6, amountOfWater / 200};
-        int[] forCup = Arrays.copyOf(supplies, supplies.length);
-        String outOf = forCoffee[5];
-
         String action;
         boolean turnOn = true;
         while (turnOn) {
@@ -25,70 +10,51 @@ public class CoffeeMachine {
             action = scanner.next();
             switch (action) {
                 case "buy":
-                    System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
+                    System.out.println("What do you want to buy? 1 - espresso, " +
+                            "2 - latte, 3 - cappuccino or back - to main menu: ");
                     String buy = scanner.next();
                     switch (buy) {
                         case "1":
-                            forCup = Arrays.copyOf(forEspresso, forEspresso.length);
-                            for (int i = 0; i < 4; i++) {
-                                if (supplies[i] == 0 || forCup[i] == 0) {
-                                    continue;
-                                } else if (supplies[i] / forCup[i] < forCup[5]) {
-                                    forCup[5] = supplies[i] / forCup[i];
-                                    outOf = forCoffee[i];
-                                }
+                            if (isEnough("espresso")) {
+                                makeCoffee("espresso");
+                                System.out.println("I have enough resources, making you a coffee!\n");
+                            } else {
+                                System.out.printf("Sorry, not enough %s!\n", outOf("espresso"));
                             }
                             break;
                         case "2":
-                            forCup = Arrays.copyOf(forLatte, forLatte.length);
-                            for (int i = 0; i < 4; i++) {
-                                if (supplies[i] == 0 || forCup[i] == 0) {
-                                    continue;
-                                } else if (supplies[i] / forCup[i] < forCup[5]) {
-                                    forCup[5] = supplies[i] / forCup[i];
-                                    outOf = forCoffee[i];
-                                }
+                            if (isEnough("latte")) {
+                                makeCoffee("latte");
+                                System.out.println("I have enough resources, making you a coffee!\n");
+                            } else {
+                                System.out.printf("Sorry, not enough %s!\n", outOf("latte"));
                             }
                             break;
                         case "3":
-                            forCup = Arrays.copyOf(forCappuccino, forCappuccino.length);
-                            for (int i = 0; i < 4; i++) {
-                                if (supplies[i] == 0 || forCup[i] == 0) {
-                                    continue;
-                                } else if (supplies[i] / forCup[i] < forCup[5]) {
-                                    forCup[5] = supplies[i] / forCup[i];
-                                    outOf = forCoffee[i];
-                                }
+                            if (isEnough("cappuccino")) {
+                                makeCoffee("cappuccino");
+                                System.out.println("I have enough resources, making you a coffee!\n");
+                            } else {
+                                System.out.printf("Sorry, not enough %s!\n", outOf("cappuccino"));
                             }
                             break;
                         default:
                             break;
                     }
-                    if (buy.equals("1") || buy.equals("2") || buy.equals("3")) {
-                        if (forCup[5] > 0) {
-                            System.out.println("I have enough resources, making you a coffee!\n");
-                            for (int i = 0; i < supplies.length-2; i++) {
-                                supplies[i] -= forCup[i];
-                            }
-                            supplies[4] += forCup[4];
-                        } else {
-                            System.out.printf("Sorry, not enough %s!\n", outOf);
-                        }
-                    }
                     break;
                 case "fill":
                     System.out.println("Write how many ml of water do you want to add: ");
-                    supplies[0] += scanner.nextInt();
+                    Coffee.MACHINE.water += scanner.nextInt();
                     System.out.println("Write how many ml of milk do you want to add: ");
-                    supplies[1] += scanner.nextInt();
+                    Coffee.MACHINE.milk += scanner.nextInt();
                     System.out.println("Write how many grams of coffee beans do you want to add: ");
-                    supplies[2] += scanner.nextInt();
+                    Coffee.MACHINE.beans += scanner.nextInt();
                     System.out.println("Write how many disposable cups of coffee do you want to add: ");
-                    supplies[3] += scanner.nextInt();
+                    Coffee.MACHINE.cups += scanner.nextInt();
                     break;
                 case "take":
-                    System.out.printf("I gave you $%d\n", supplies[4]);
-                    supplies[4] = 0;
+                    System.out.printf("I gave you $%d\n", Coffee.MACHINE.getPrice());
+                    Coffee.MACHINE.price = 0;
                     break;
                 case "remaining":
                     System.out.printf("\nThe coffee machine has:\n" +
@@ -96,12 +62,90 @@ public class CoffeeMachine {
                             "%d of milk\n" +
                             "%d of coffee beans\n" +
                             "%d of disposable cups\n" +
-                            "%d of money\n", supplies[0], supplies[1], supplies[2], supplies[3], supplies[4]);
+                            "%d of money\n",
+                            Coffee.MACHINE.getWater(),
+                            Coffee.MACHINE.getMilk(),
+                            Coffee.MACHINE.getBeans(),
+                            Coffee.MACHINE.getCups(),
+                            Coffee.MACHINE.getPrice());
                     break;
                 case "exit":
                     turnOn = false;
                     break;
             }
+        }
+    }
+
+
+    public static boolean isEnough(String value) {
+        if (Coffee.MACHINE.getWater() - Coffee.valueOf(value.toUpperCase()).getWater() >= 0 &&
+                Coffee.MACHINE.getMilk() - Coffee.valueOf(value.toUpperCase()).getMilk() >= 0 &&
+                Coffee.MACHINE.getBeans() - Coffee.valueOf(value.toUpperCase()).getBeans() >= 0 &&
+                Coffee.MACHINE.getCups() - Coffee.valueOf(value.toUpperCase()).getCups() >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public static void makeCoffee(String value) {
+        Coffee.MACHINE.water -= Coffee.valueOf(value.toUpperCase()).getWater();
+        Coffee.MACHINE.milk -= Coffee.valueOf(value.toUpperCase()).getMilk();
+        Coffee.MACHINE.beans -= Coffee.valueOf(value.toUpperCase()).getBeans();
+        Coffee.MACHINE.cups -= Coffee.valueOf(value.toUpperCase()).getCups();
+        Coffee.MACHINE.price += Coffee.valueOf(value.toUpperCase()).getPrice();
+    }
+    public static String outOf(String value) {
+        String supply = "mind";
+        if (Coffee.MACHINE.getWater() - Coffee.valueOf(value.toUpperCase()).getWater() < 0) {
+            supply = "water";
+        } else if (Coffee.MACHINE.getMilk() - Coffee.valueOf(value.toUpperCase()).getMilk() < 0) {
+            supply = "milk";
+        } else if (Coffee.MACHINE.getBeans() - Coffee.valueOf(value.toUpperCase()).getBeans() < 0) {
+            supply = "coffee beans";
+        } else if (Coffee.MACHINE.getCups() - Coffee.valueOf(value.toUpperCase()).getCups() < 0) {
+            supply = "disposable cups";
+        }
+        return supply;
+    }
+
+    public enum Coffee {
+        MACHINE(400, 540, 120, 9, 550),
+        ESPRESSO(250, 0, 16,1, 4),
+        LATTE(350, 75, 20,1, 7),
+        CAPPUCCINO(200, 100, 12,1, 6);
+
+        int water;
+        int milk;
+        int beans;
+        int price;
+        int cups;
+
+        Coffee (int water, int milk, int beans,int cups, int price) {
+            this.water = water;
+            this.milk = milk;
+            this.beans = beans;
+            this.cups = cups;
+            this.price = price;
+        }
+
+        public int getWater() {
+            return water;
+        }
+        public int getMilk() {
+            return milk;
+        }
+        public int getBeans() {
+            return beans;
+        }
+        public int getCups() {
+            return cups;
+        }
+        public int getPrice() {
+            return price;
+        }
+        public int takeMoney() {
+            MACHINE.price = 10;
+            return MACHINE.price;
         }
     }
 }
