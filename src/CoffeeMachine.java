@@ -25,7 +25,8 @@ public class CoffeeMachine {
             action = scanner.next();
             switch (action) {
                 case "buy":
-                    System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
+                    System.out.println("What do you want to buy? 1 - espresso, " +
+                            "2 - latte, 3 - cappuccino or back - to main menu: ");
                     String buy = scanner.next();
                     switch (buy) {
                         case "1":
